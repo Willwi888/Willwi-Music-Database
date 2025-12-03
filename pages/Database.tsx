@@ -20,11 +20,15 @@ export const Database: React.FC = () => {
 
   // Filter Logic
   const filteredTracks = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    
     return tracks.filter(track => {
+      // 增強搜尋邏輯：同時比對 歌名、ISRC、UPC 以及 版本標記
       const matchesSearch = 
-        track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        track.isrc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        track.upc.toLowerCase().includes(searchQuery.toLowerCase());
+        track.title.toLowerCase().includes(query) ||
+        track.isrc.toLowerCase().includes(query) ||
+        track.upc.toLowerCase().includes(query) ||
+        (track.versionLabel && track.versionLabel.toLowerCase().includes(query));
       
       const matchesLang = selectedLang === 'All' || track.languages.includes(selectedLang);
       const matchesProject = selectedProject === 'All' || track.project === selectedProject;
@@ -77,7 +81,7 @@ export const Database: React.FC = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
             <input 
               type="text" 
-              placeholder="搜尋 歌名, ISRC..." 
+              placeholder="搜尋 歌名, 版本, ISRC, UPC..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-willwi-dark border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-willwi-primary transition-colors"

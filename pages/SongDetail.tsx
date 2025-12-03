@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Disc, Edit2, Save, X, Bot, Music, Video, Share2, Mic2, PlayCircle, Link as LinkIcon, FileText, AlignLeft } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getSongInsight } from '../services/geminiService';
-import { ProjectType } from '../types';
+import { ProjectType, Language } from '../types';
 import { SOCIAL_LINKS } from '../constants';
 import { usePrompt } from '../hooks/usePrompt';
 
@@ -50,6 +50,17 @@ export const SongDetail: React.FC = () => {
 
   const handleChange = (field: string, value: any) => {
     setEditForm((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  const handleLanguageToggle = (lang: Language) => {
+    setEditForm((prev: any) => {
+      const currentLangs = prev.languages || [];
+      if (currentLangs.includes(lang)) {
+        return { ...prev, languages: currentLangs.filter((l: Language) => l !== lang) };
+      } else {
+        return { ...prev, languages: [...currentLangs, lang] };
+      }
+    });
   };
 
   // Helper to get value based on mode
@@ -175,15 +186,35 @@ export const SongDetail: React.FC = () => {
                      )}
                    </div>
 
-                   {/* Languages Display */}
+                   {/* Languages Display/Edit */}
                    <div>
                       <label className="text-xs text-gray-500 uppercase font-semibold mb-1 block text-gray-400">語言</label>
-                      <div className="flex flex-wrap gap-2">
-                        {track.languages.map(l => (
-                          <span key={l} className="px-2 py-1 bg-white/5 rounded text-xs text-gray-300 border border-white/10">{l}</span>
-                        ))}
-                        {isEditing && <span className="text-xs text-gray-500 self-center">(語言請至新增頁面設定)</span>}
-                      </div>
+                      {isEditing ? (
+                        <div className="flex flex-wrap gap-2">
+                          {Object.values(Language).map((lang) => {
+                            const isSelected = editForm.languages?.includes(lang);
+                            return (
+                              <button
+                                key={lang}
+                                onClick={() => handleLanguageToggle(lang)}
+                                className={`px-3 py-1 rounded-full text-xs border transition-all ${
+                                  isSelected 
+                                    ? 'bg-willwi-primary/20 border-willwi-primary text-willwi-primary' 
+                                    : 'bg-transparent border-white/10 text-gray-500 hover:border-white/30'
+                                }`}
+                              >
+                                {lang}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {track.languages.map(l => (
+                            <span key={l} className="px-2 py-1 bg-white/5 rounded text-xs text-gray-300 border border-white/10">{l}</span>
+                          ))}
+                        </div>
+                      )}
                    </div>
                  </div>
                </div>

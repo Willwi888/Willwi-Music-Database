@@ -1,15 +1,28 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { Track } from "../types";
 
-// Initialize Gemini Client
-// In a production app, the API Key should be handled via a secure backend proxy.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Safety check for API Key to prevent runtime crashes if process is undefined
+const getApiKey = () => {
+  try {
+    // Check if process is defined first to avoid ReferenceError in some browser envs
+    if (typeof process !== 'undefined' && process.env) {
+      return process.env.API_KEY || '';
+    }
+    return '';
+  } catch (e) {
+    console.warn("process.env is not accessible.");
+    return '';
+  }
+};
+
+const apiKey = getApiKey();
+// Only initialize AI if key exists, otherwise handle gracefully in function
+const ai = apiKey ? new GoogleGenAI({ apiKey: apiKey }) : null;
 
 export const getSongInsight = async (track: Track): Promise<string> => {
   try {
-    if (!process.env.API_KEY) {
-      return "Gemini API Key 缺失，請設定環境變數。";
+    if (!ai) {
+      return "Gemini API Key 缺失，請設定環境變數 API_KEY。";
     }
 
     const model = 'gemini-2.5-flash';
